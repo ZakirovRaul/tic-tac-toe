@@ -64,7 +64,7 @@ var Button = (function(){
 		this.ctx.fillRect(this.x, this.y, this.width, this.height);	
 	};
 	
-	Button.prototype.goClick = function(clickX, clickY){
+	Button.prototype.click = function(clickX, clickY){
 		if(clickX > this.x & clickX < this.x + this.width & clickY > this.y & clickY < this.y + this.height)
 		{
 			fireEvent('click', [this]);
