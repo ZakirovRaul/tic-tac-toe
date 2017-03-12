@@ -6,6 +6,11 @@ var Engine = (function(){
 	var completeX = '';
 	var completeO = '';
 	var intel;
+	var player1, player2;
+	var curStepCPU = false;
+	
+	Engine.prototype = Object.create(EventListener.prototype);
+	Engine.prototype.constructor = Engine;
 	
 	function Engine(dimension)
 	{
@@ -19,16 +24,29 @@ var Engine = (function(){
         intel = new Intel(matrix, 'x', 'o');		
 	}
 	
-	Engine.prototype.tryStep = function(m,n){
-		if(this.allowStep(m, n))
-		{
-			engine.doStep(m, n);
-			engine.checkStep(m, n);
-			engine.nextStep();
-			window.dispatchEvent(new CustomEvent("goCPU"));
-			return true;
+	/*Engine.prototype.startGame = function(){
+		curStep = 'x';
+		curStepCPU = true;
+		if(curStepCPU){
+		   
 		}
-		return false;
+	}*/
+	
+	Engine.prototype.doStep = function(m,n){
+		matrix[m][n] = curStep;
+		fireEvent('onStep', [[m,n]]);
+		if(this.checkStep(m, n)){
+			this.nextStep();
+		}
+	};
+	
+	Engine.prototype.goCPU = function(){
+	   var step = intel.doStep();
+	   if(step != null){
+		   engine.doStep(step[0], step[1]);
+		   /*engine.checkStep(step[0], step[1]);
+		   engine.nextStep();*/
+	   }
 	};
 	
 	
@@ -36,9 +54,9 @@ var Engine = (function(){
 		return matrix[m][n] == 0;
 	};
 	
-	Engine.prototype.doStep = function(m, n){
+	/*Engine.prototype.doStep = function(m, n){
 		matrix[m][n] = curStep;
-	};
+	};*/
 	
 	Engine.prototype.checkStep = function(m, n){
 		var ar = [];
@@ -49,7 +67,7 @@ var Engine = (function(){
 	    if(ar.join('') == completeX || ar.join('') == completeO)
 		{
 			gameOver(curStep);
-			return;
+			return false;
 		}		
 		ar = [];
 		for(var i = 0; i < d; i++)
@@ -59,7 +77,7 @@ var Engine = (function(){
 		if(ar.join('') == completeX || ar.join('') == completeO)
 		{
 			gameOver(curStep);
-			return;
+			return false;
 		}
 		ar = [];
 		for(var i = 0, l = 0; i < d; i++, l++)
@@ -69,7 +87,7 @@ var Engine = (function(){
 		if(ar.join('') == completeX || ar.join('') == completeO)
 		{
 			gameOver(curStep);
-			return;
+			return false;
 		}
 		ar = [];
 		for(var i = 0, l = d; i < d; i++, l--)
@@ -79,12 +97,13 @@ var Engine = (function(){
 		if(ar.join('') == completeX || ar.join('') == completeO)
 		{
 			gameOver(curStep);
-			return;
+			return false;
 		}
 		if(draw()){
 			gameOver('DRAW');
-			return;
+			return false;
 		}
+		return true;
 	};
 	
 	Engine.prototype.nextStep = function()
@@ -93,25 +112,24 @@ var Engine = (function(){
 		{
 			curStep = 'o';
 			stepColor = '#00e600';
+			this.goCPU();
 		}
 		else
 		{
 			curStep = 'x';
 			stepColor = '#ffff1a';
 		}
-	};
-	
-	Engine.prototype.goCPU = function(){
-		return intel.doStep();
-	};
+	};	
 	
 	Engine.prototype.getStepColor = function(){
 		return stepColor;
 	};
 	
 	function gameOver(winner){
-		setTimeout(function(){}, 2000);
-		alert("Winner is " + winner);
+		setTimeout(function(){
+			alert("Winner is " + winner);
+		}, 1000);
+		
 	}
 	
 	function draw(){

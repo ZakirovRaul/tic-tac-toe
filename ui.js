@@ -1,23 +1,25 @@
 var UI = (function(){	
+    var engine;
 	var canvas, ctx, dimension;
 	var buttons = [];
 	
-	function UI(_dimension){
+	function UI(_engine, _dimension){
+		engine = _engine;
+		dimension = _dimension;
 		canvas = document.getElementById("myCanvas");
 	    ctx = canvas.getContext('2d');
-		dimension = _dimension;
 	}
 	
-	UI.prototype.init = function(engine){
+	UI.prototype.init = function(){		
 		for(var n = 0; n < dimension; n++)
 		{
 			for(var m = 0; m < dimension; m++)
 			{
 				var button = new Button(ctx, m * 60, n * 60, 50, 50, m, n);
 				buttons.push(button);
-				button.addEventListener('click', function(evt){
-					if(engine.tryStep(evt.m, evt.n)){
-						evt.redraw(engine.getStepColor());
+				button.addEventListener('onClick', function(evt){
+					if(engine.allowStep(evt.m, evt.n)){
+						engine.doStep(evt.m, evt.n);
 					}
 				});
 				button.draw();
@@ -33,7 +35,11 @@ var UI = (function(){
 				btn.click(x, y);
 			}
 		});
-
+		
+		engine.addEventListener('onStep', function(evt){
+		    var btnId = evt[0] + evt[1]*dimension;
+		    buttons[btnId].redraw(engine.getStepColor());
+		});
 	};
 
 	
